@@ -24,6 +24,7 @@ async function checkRegistrationAndProceed() {
             loadWallet();
             initializeWebSocket();
             initializeLandingScreen();
+            initializeFooterNavigation();
         } else {
             showRegistrationRequired();
         }
@@ -66,6 +67,84 @@ function hideRegistrationRequired() {
     const regScreen = document.getElementById('registration-required-screen');
     if (regScreen) {
         regScreen.style.display = 'none';
+    }
+}
+
+function initializeFooterNavigation() {
+    const footerButtons = document.querySelectorAll('.footer-btn');
+    
+    footerButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const target = this.dataset.target;
+            
+            footerButtons.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+            
+            const landingScreen = document.getElementById('landing-screen');
+            const selectionScreen = document.getElementById('selection-screen');
+            const profileScreen = document.getElementById('profile-screen');
+            const gameScreen = document.getElementById('game-screen');
+            
+            if (landingScreen) landingScreen.style.display = 'none';
+            if (selectionScreen) selectionScreen.style.display = 'none';
+            if (profileScreen) profileScreen.style.display = 'none';
+            if (gameScreen) gameScreen.style.display = 'none';
+            
+            if (target === 'game') {
+                if (landingScreen) landingScreen.style.display = 'flex';
+            } else if (target === 'wallet') {
+                if (landingScreen) landingScreen.style.display = 'flex';
+            } else if (target === 'profile') {
+                if (profileScreen) profileScreen.style.display = 'flex';
+                loadProfile();
+            }
+        });
+    });
+    
+    const profileRefreshBtn = document.getElementById('profile-refresh-btn');
+    if (profileRefreshBtn) {
+        profileRefreshBtn.addEventListener('click', loadProfile);
+    }
+}
+
+async function loadProfile() {
+    if (!currentUserId) {
+        console.log('No user ID for profile');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/profile/${currentUserId}`);
+        const data = await response.json();
+        
+        if (data.success && data.profile) {
+            const profile = data.profile;
+            
+            const avatarLetter = document.getElementById('profile-avatar-letter');
+            if (avatarLetter) {
+                avatarLetter.textContent = (profile.username || 'P').charAt(0).toUpperCase();
+            }
+            
+            const usernameEl = document.getElementById('profile-username');
+            if (usernameEl) usernameEl.textContent = profile.username || '---';
+            
+            const telegramIdEl = document.getElementById('profile-telegram-id');
+            if (telegramIdEl) telegramIdEl.textContent = profile.telegramId || '---';
+            
+            const phoneEl = document.getElementById('profile-phone');
+            if (phoneEl) phoneEl.textContent = profile.phoneNumber || '---';
+            
+            const balanceEl = document.getElementById('profile-balance');
+            if (balanceEl) balanceEl.textContent = `${parseFloat(profile.balance).toFixed(2)} ETB`;
+            
+            const gamesEl = document.getElementById('profile-total-games');
+            if (gamesEl) gamesEl.textContent = profile.totalGames || 0;
+            
+            const winsEl = document.getElementById('profile-wins');
+            if (winsEl) winsEl.textContent = profile.wins || 0;
+        }
+    } catch (error) {
+        console.error('Error loading profile:', error);
     }
 }
 

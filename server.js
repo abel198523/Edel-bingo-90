@@ -817,6 +817,53 @@ app.get('/api/check-registration/:telegramId', async (req, res) => {
     }
 });
 
+app.get('/api/profile/:telegramId', async (req, res) => {
+    try {
+        const { telegramId } = req.params;
+        const tgId = parseInt(telegramId) || 0;
+        
+        const userResult = await pool.query(
+            `SELECT u.id, u.username, u.telegram_id, u.phone_number, u.is_registered, u.created_at, w.balance 
+             FROM users u 
+             LEFT JOIN wallets w ON u.id = w.user_id 
+             WHERE u.telegram_id = $1`,
+            [tgId]
+        );
+
+        if (userResult.rows.length === 0) {
+            return res.json({ success: false, message: 'User not found' });
+        }
+
+        const user = userResult.rows[0];
+        
+        const gamesResult = await pool.query(
+            `SELECT COUNT(*) as total_games FROM game_participants WHERE user_id = $1`,
+            [user.id]
+        );
+        
+        const winsResult = await pool.query(
+            `SELECT COUNT(*) as wins FROM games WHERE winner_id = $1`,
+            [user.id]
+        );
+
+        res.json({
+            success: true,
+            profile: {
+                username: user.username || 'Player',
+                telegramId: user.telegram_id,
+                phoneNumber: user.phone_number || '---',
+                balance: parseFloat(user.balance) || 0,
+                totalGames: parseInt(gamesResult.rows[0].total_games) || 0,
+                wins: parseInt(winsResult.rows[0].wins) || 0,
+                memberSince: user.created_at
+            }
+        });
+    } catch (err) {
+        console.error('Profile error:', err);
+        res.status(500).json({ success: false, message: 'Failed to load profile' });
+    }
+});
+
 app.get('/api/wallet/:userId', async (req, res) => {
     try {
         const { userId } = req.params;

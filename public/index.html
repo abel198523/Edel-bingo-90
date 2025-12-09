@@ -109,6 +109,57 @@
             </div>
         </div>
 
+        <div id="profile-screen" style="display: none;">
+            <div class="profile-container">
+                <div class="profile-header">
+                    <h2>ፕሮፋይል</h2>
+                </div>
+                
+                <div class="profile-avatar">
+                    <div class="avatar-circle">
+                        <span id="profile-avatar-letter">?</span>
+                    </div>
+                </div>
+                
+                <div class="profile-info">
+                    <div class="profile-item">
+                        <span class="profile-label">ስም</span>
+                        <span class="profile-value" id="profile-username">---</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">Telegram ID</span>
+                        <span class="profile-value" id="profile-telegram-id">---</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">ስልክ ቁጥር</span>
+                        <span class="profile-value" id="profile-phone">---</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">ቀሪ ሒሳብ</span>
+                        <span class="profile-value" id="profile-balance">0.00 ETB</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">አጠቃላይ ጨዋታዎች</span>
+                        <span class="profile-value" id="profile-total-games">0</span>
+                    </div>
+                    <div class="profile-item">
+                        <span class="profile-label">አሸናፊ ጨዋታዎች</span>
+                        <span class="profile-value" id="profile-wins">0</span>
+                    </div>
+                </div>
+                
+                <div class="profile-actions">
+                    <button class="profile-btn" id="profile-refresh-btn">ዳግም ጫን</button>
+                </div>
+            </div>
+            
+            <div class="selection-footer">
+                <div class="footer-btn" data-target="game">Game</div>
+                <div class="footer-btn" data-target="wallet">Wallet</div>
+                <div class="footer-btn active" data-target="profile">Profile</div>
+            </div>
+        </div>
+
         <div id="game-screen" style="display: none;">
             
             <div class="game-header">
