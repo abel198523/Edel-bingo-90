@@ -552,13 +552,18 @@ function displayCalledNumber(letter, number) {
         setTimeout(() => callCircle.classList.remove('new-call'), 500);
     }
     
-    // Add to call history
+    // Add to call history (limit to 3)
     const historyElement = document.getElementById('call-history');
     if (historyElement) {
         const callItem = document.createElement('span');
         callItem.className = 'history-call';
         callItem.textContent = letter + number;
         historyElement.insertBefore(callItem, historyElement.firstChild);
+        
+        // Keep only last 3 calls
+        while (historyElement.children.length > 3) {
+            historyElement.removeChild(historyElement.lastChild);
+        }
     }
 }
 

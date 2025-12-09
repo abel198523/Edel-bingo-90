@@ -306,6 +306,21 @@ async function startWinnerDisplay(winnerInfo) {
             if (game && game.total_pot > 0) {
                 await Wallet.win(winnerInfo.userId, game.total_pot, currentGameId);
                 winnerInfo.prize = game.total_pot;
+                
+                // Send real-time balance update to the winner
+                const newBalance = await Wallet.getBalance(winnerInfo.userId);
+                wss.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        const player = gameState.players.get(client.playerId);
+                        if (player && player.userId === winnerInfo.userId) {
+                            client.send(JSON.stringify({
+                                type: 'balance_update',
+                                balance: parseFloat(newBalance),
+                                prize: game.total_pot
+                            }));
+                        }
+                    }
+                });
             }
         }
     } catch (err) {
