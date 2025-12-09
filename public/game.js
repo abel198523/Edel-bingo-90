@@ -1,13 +1,73 @@
 let currentUserId = null;
 let currentStake = 10;
 let ws = null;
+let isRegistered = false;
 
 document.addEventListener('DOMContentLoaded', function() {
     initializeUser();
-    loadWallet();
-    initializeWebSocket();
-    initializeLandingScreen();
+    checkRegistrationAndProceed();
 });
+
+async function checkRegistrationAndProceed() {
+    if (!currentUserId) {
+        showRegistrationRequired();
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/check-registration/${currentUserId}`);
+        const data = await response.json();
+        
+        if (data.registered) {
+            isRegistered = true;
+            hideRegistrationRequired();
+            loadWallet();
+            initializeWebSocket();
+            initializeLandingScreen();
+        } else {
+            showRegistrationRequired();
+        }
+    } catch (error) {
+        console.error('Error checking registration:', error);
+        showRegistrationRequired();
+    }
+}
+
+function showRegistrationRequired() {
+    const landingScreen = document.getElementById('landing-screen');
+    const selectionScreen = document.getElementById('selection-screen');
+    const gameScreen = document.getElementById('game-screen');
+    
+    if (landingScreen) landingScreen.style.display = 'none';
+    if (selectionScreen) selectionScreen.style.display = 'none';
+    if (gameScreen) gameScreen.style.display = 'none';
+    
+    let regScreen = document.getElementById('registration-required-screen');
+    if (!regScreen) {
+        regScreen = document.createElement('div');
+        regScreen.id = 'registration-required-screen';
+        regScreen.innerHTML = `
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: white; text-align: center; padding: 20px;">
+                <h1 style="font-size: 2em; margin-bottom: 20px;">🎰 ችዋታቢንጎ</h1>
+                <div style="background: rgba(255,255,255,0.1); padding: 30px; border-radius: 15px; max-width: 300px;">
+                    <p style="font-size: 1.2em; margin-bottom: 20px;">⚠️ አልተመዘገቡም</p>
+                    <p style="margin-bottom: 20px;">ይህን ጨዋታ ለመጫወት መጀመሪያ መመዝገብ አለብዎት።</p>
+                    <p style="margin-bottom: 20px;">እባክዎ ወደ Telegram ቦት ተመልሰው <strong>"📱 Register"</strong> ቁልፍን ይጫኑ።</p>
+                    <p style="font-size: 0.9em; color: #aaa;">ከተመዘገቡ በኋላ 10 ብር ቦነስ ያገኛሉ! 🎁</p>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(regScreen);
+    }
+    regScreen.style.display = 'block';
+}
+
+function hideRegistrationRequired() {
+    const regScreen = document.getElementById('registration-required-screen');
+    if (regScreen) {
+        regScreen.style.display = 'none';
+    }
+}
 
 function initializeLandingScreen() {
     const landingScreen = document.getElementById('landing-screen');

@@ -56,13 +56,16 @@ bot.onText(/\/start/, async (msg) => {
         console.error('Error checking user:', err);
     }
     
+    const miniAppUrlWithId = MINI_APP_URL ? `${MINI_APP_URL}?tg_id=${telegramId}` : null;
+    
     if (isRegistered) {
-        // User is registered - show Play and Check Balance buttons
-        if (MINI_APP_URL) {
+        // User is registered - show Register, Play and Check Balance buttons
+        if (miniAppUrlWithId) {
             bot.sendMessage(chatId, "እንኳን ደህና መጡ! ጨዋታውን ለመጀመር 'Play' የሚለውን ቁልፍ ይጫኑ።", {
                 reply_markup: {
                     keyboard: [
-                        [{ text: "▶️ Play", web_app: { url: MINI_APP_URL } }],
+                        [{ text: "📱 Register", request_contact: true }],
+                        [{ text: "▶️ Play", web_app: { url: miniAppUrlWithId } }],
                         [{ text: "💰 Check Balance" }]
                     ],
                     resize_keyboard: true
@@ -74,10 +77,9 @@ bot.onText(/\/start/, async (msg) => {
         bot.sendMessage(chatId, "እንኳን ደህና መጡ ወደ ችዋታቢንጎ! 🎉\n\nለመመዝገብ እና 10 ብር ቦነስ ለማግኘት ስልክ ቁጥርዎን ያጋሩ።", {
             reply_markup: {
                 keyboard: [
-                    [{ text: "📱 Register (ስልክ ቁጥር ያጋሩ)", request_contact: true }]
+                    [{ text: "📱 Register", request_contact: true }]
                 ],
-                resize_keyboard: true,
-                one_time_keyboard: true
+                resize_keyboard: true
             }
         });
     }
@@ -89,6 +91,7 @@ bot.on('contact', async (msg) => {
     const contact = msg.contact;
     const telegramId = contact.user_id;
     const phoneNumber = contact.phone_number;
+    const miniAppUrlWithId = MINI_APP_URL ? `${MINI_APP_URL}?tg_id=${telegramId}` : null;
     
     try {
         // Check if already registered
@@ -98,7 +101,9 @@ bot.on('contact', async (msg) => {
             bot.sendMessage(chatId, "እርስዎ ቀድሞ ተመዝግበዋል! 'Play' ን ይጫኑ።", {
                 reply_markup: {
                     keyboard: [
-                        [{ text: "▶️ Play", web_app: { url: MINI_APP_URL } }]
+                        [{ text: "📱 Register", request_contact: true }],
+                        [{ text: "▶️ Play", web_app: { url: miniAppUrlWithId } }],
+                        [{ text: "💰 Check Balance" }]
                     ],
                     resize_keyboard: true
                 }
@@ -125,7 +130,9 @@ bot.on('contact', async (msg) => {
         bot.sendMessage(chatId, "✅ በተሳካ ሁኔታ ተመዝግበዋል!\n\n🎁 10 ብር የእንኳን ደህና መጡ ቦነስ አግኝተዋል!\n\nአሁን 'Play' ን ይጫኑ!", {
             reply_markup: {
                 keyboard: [
-                    [{ text: "▶️ Play", web_app: { url: MINI_APP_URL } }]
+                    [{ text: "📱 Register", request_contact: true }],
+                    [{ text: "▶️ Play", web_app: { url: miniAppUrlWithId } }],
+                    [{ text: "💰 Check Balance" }]
                 ],
                 resize_keyboard: true
             }
@@ -771,6 +778,27 @@ app.post('/api/register', async (req, res) => {
     } catch (err) {
         console.error('Registration error:', err);
         res.status(500).json({ success: false, message: 'Registration failed' });
+    }
+});
+
+app.get('/api/check-registration/:telegramId', async (req, res) => {
+    try {
+        const { telegramId } = req.params;
+        const tgId = parseInt(telegramId) || 0;
+        
+        const result = await pool.query(
+            'SELECT id, is_registered FROM users WHERE telegram_id = $1',
+            [tgId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.json({ registered: false });
+        }
+
+        res.json({ registered: result.rows[0].is_registered || false });
+    } catch (err) {
+        console.error('Check registration error:', err);
+        res.json({ registered: false });
     }
 });
 
