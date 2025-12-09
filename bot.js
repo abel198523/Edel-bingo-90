@@ -13,6 +13,7 @@ const bot = new TelegramBot(TELEGRAM_BOT_TOKEN, { polling: true });
 
 bot.onText(/\/start/, (msg) => {
     const chatId = msg.chat.id;
+    const userId = msg.from.id;
     
     const keyboard = {
         keyboard: [
@@ -20,7 +21,7 @@ bot.onText(/\/start/, (msg) => {
                 { text: 'Register', request_contact: true }
             ],
             [
-                { text: 'Play', web_app: { url: `${RENDER_SERVER_URL}/index.html` } }
+                { text: 'Play', web_app: { url: `${RENDER_SERVER_URL}/index.html?tg_id=${userId}` } }
             ]
         ],
         resize_keyboard: true,
